@@ -1,7 +1,0 @@
-[0m[[0m[31merror[0m] [0m[0m/home/edmund/workspace/scala/sbench/src/main/scala/sbench/SBench.scala:4:8: object BlackHole is not a member of package org.openjdk.jmh.infra[0m
-[0m[[0m[31merror[0m] [0m[0mimport org.openjdk.jmh.infra.BlackHole[0m
-[0m[[0m[31merror[0m] [0m[0m       ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/edmund/workspace/scala/sbench/src/main/scala/sbench/SBench.scala:7:25: not found: type BlackHole[0m
-[0m[[0m[31merror[0m] [0m[0m  def plus1000Times(bh: BlackHole): Int = {[0m
-[0m[[0m[31merror[0m] [0m[0m                        ^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
