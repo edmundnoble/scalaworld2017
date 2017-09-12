@@ -17,12 +17,12 @@ scalacOptions ++= Seq(
   "-Yno-adapted-args",
   "-Ywarn-numeric-widen",
   "-Ywarn-unused-import",
-  "-Ywarn-value-discard",
   "-Ypartial-unification",
+  "-language:_",
   "-Ypatmat-exhaust-depth", "40",
   "-Xfuture")
 
 libraryDependencies += "org.typelevel" %% "cats-core" % "1.0.0-MF"
-
+libraryDependencies += "org.typelevel" %% "cats-free" % "1.0.0-MF"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
