@@ -24,5 +24,8 @@ scalacOptions ++= Seq(
 
 libraryDependencies += "org.typelevel" %% "cats-core" % "1.0.0-MF"
 libraryDependencies += "org.typelevel" %% "cats-free" % "1.0.0-MF"
+libraryDependencies += "org.typelevel" %% "cats-effect" % "0.4"
+libraryDependencies += "org.typelevel" %% "cats-mtl" % "0.0.2"
+
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"

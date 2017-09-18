@@ -21,47 +21,64 @@ trait ASTObject[@specialized(Int) A] {
   def lit(n: Int): A
 }
 
-object astObject extends ASTObject[Int] {
-  def plus(a: Int, b: Int) = a + b
+object ASTObject {
 
-  def mult(a: Int, b: Int) = a * b
+  val ordinary = new ASTObject[Int] {
+    def plus(a: Int, b: Int) = a + b
 
-  def lit(n: Int) = n
-}
+    def mult(a: Int, b: Int) = a * b
 
-object astOtherObject extends ASTObject[Int] {
-  def plus(a: Int, b: Int) = a * b
+    def lit(n: Int) = n
+  }
 
-  def mult(a: Int, b: Int) = a + b
+  val backwards = new ASTObject[Int] {
+    def plus(a: Int, b: Int) = a * b
 
-  def lit(n: Int) = n
+    def mult(a: Int, b: Int) = a + b
+
+    def lit(n: Int) = n
+  }
+
+  val first = new ASTObject[Int] {
+    def plus(a: Int, b: Int) = a
+
+    def mult(a: Int, b: Int) = a
+
+    def lit(n: Int) = n
+  }
 }
 
 final case class ASTObjectRecord[@specialized(Int) A](plus: (A, A) => A, mult: (A, A) => A, lit: Int => A)
 
 object ASTObjectRecord {
-  val int = ASTObjectRecord[Int](_ + _, _ * _, identity[Int])
-  val otherInt = ASTObjectRecord[Int](_ * _, _ + _, identity[Int])
+  def const[A, B](a: A, b: B): A = a
+  val ordinary = new ASTObjectRecord[Int](_ + _, _ * _, identity[Int])
+  val backwards = new ASTObjectRecord[Int](_ * _, _ + _, identity[Int])
+  val first = new ASTObjectRecord[Int](const, const, identity[Int])
 }
 
 class Main {
   @Benchmark
   def plus1000TimesObject(bh: Blackhole): Unit = {
-    bh.consume((0 to 3000).foldLeft(astObject.lit(1) + astOtherObject.lit(1)) { (a, b) =>
-      val o = if (a % 2 == 0) astObject else astOtherObject
-      o.mult(o.plus(b, o.lit(a)), o.lit(a))
+    bh.consume((0 to 5000).foldLeft(ASTObject.ordinary.lit(1) + ASTObject.backwards.lit(1)) { (a, b) =>
+      if (a % 2 == 0) 
+        ASTObject.ordinary.plus(a, b) + ASTObject.backwards.plus(a, b) + ASTObject.first.plus(a, b)
+      else 
+        ASTObject.ordinary.mult(a, b) + ASTObject.backwards.mult(a, b) + ASTObject.first.mult(a, b)
     })
   }
 
   @Benchmark
   def plus1000TimesObjectRecord(bh: Blackhole): Unit = {
-    bh.consume((0 to 3000).foldLeft(ASTObjectRecord.int.lit(1) + ASTObjectRecord.otherInt.lit(1)) { (a, b) =>
-      val o = if (a % 2 == 0) ASTObjectRecord.int else ASTObjectRecord.otherInt
-      o.mult(o.plus(b, o.lit(a)), o.lit(a))
+    bh.consume((0 to 5000).foldLeft(ASTObjectRecord.ordinary.lit(1) + ASTObjectRecord.backwards.lit(1)) { (a, b) =>
+      if (a % 2 == 0) 
+        ASTObjectRecord.ordinary.plus(a, b) + ASTObjectRecord.backwards.plus(a, b) + ASTObjectRecord.first.plus(a, b)
+      else 
+        ASTObjectRecord.ordinary.mult(a, b) + ASTObjectRecord.backwards.mult(a, b) + ASTObjectRecord.first.mult(a, b)
     })
   }
 
-  def interpretData(data: ASTData): Int = sumAdd(data) + productAdd(data)
+  def interpretData(data: ASTData): Int = sumAdd(data) + productAdd(data) + firstAdd(data)
 
   def sumAdd(data: ASTData): Int = {
     data match {
@@ -79,9 +96,17 @@ class Main {
     }
   }
 
+  def firstAdd(data: ASTData): Int = {
+    data match {
+      case Plus(a, b) => firstAdd(a)
+      case Mult(a, b) => firstAdd(a)
+      case Lit(n) => n
+    }
+  }
+
   @Benchmark
   def plus1000TimesAst(bh: Blackhole): Unit = {
-    bh.consume(interpretData((0 to 3000).foldLeft(Lit(1): ASTData)((l, i) => Mult(Plus(l, Lit(i)), Lit(i)))))
+    bh.consume(interpretData((0 to 5000).foldLeft(Lit(1): ASTData)((l, i) => if (i % 2 == 0) Plus(l, Lit(i)) else Mult(l, Lit(i)))))
   }
 
   def interpretTrampolineData(data: ASTData): Int =
